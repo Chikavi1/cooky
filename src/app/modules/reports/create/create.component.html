@@ -1,0 +1,632 @@
+<div class="grid grid-cols-12 min-h-full bg-gray-300">
+   <div class="md:col-span-3 hidden md:block m-8">
+    <img
+      src="https://i.ibb.co/mCmnC91h/Dise-o-sin-t-tulo-5.png"
+      alt="Imagen"
+      class="w-full rounded-lg mt-2 sticky top-0"
+    />
+  </div>
+
+   <div class="md:col-span-9 col-span-12 bg-gray-300 min-h-screen px-8   overflow-y-auto">
+    <form [formGroup]="reportForm" (ngSubmit)="createReport()">
+      <!-- Paso 1 -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 1" [formGroupName]="'step1'">
+        <div class="mt-12">
+          <h1 class="text-4xl font-bold text-gray-900 mb-4">Reportar Desaparición de Mascota</h1>
+          <p class="text-lg text-gray-600 max-w-2xl">
+            Completa los siguientes datos para crear un reporte que nos ayude a encontrar a tu mascota lo antes posible
+          </p>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center mt-12">
+          <span
+            class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3"
+            >1</span
+          >
+          Datos de la mascota
+        </h2>
+
+
+
+
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Tipo de mascota -->
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de mascota</label>
+            <div class="grid grid-cols-3 gap-3">
+              <label
+                class="relative flex flex-col items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                <input type="radio" formControlName="petType" value="perro" class="sr-only peer" />
+                <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">🐕</div>
+                <span class="text-sm font-medium text-gray-700 text-center">Perro</span>
+                <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+              </label>
+
+              <label
+                class="relative flex flex-col items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                <input type="radio" formControlName="petType" value="gato" class="sr-only peer" />
+                <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">🐱</div>
+                <span class="text-sm font-medium text-gray-700 text-center">Gato</span>
+                <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+              </label>
+
+              <label
+                class="relative flex flex-col items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                <input type="radio" formControlName="petType" value="otro" class="sr-only peer" />
+                <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">🐾</div>
+                <span class="text-sm font-medium text-gray-700 text-center">Otro</span>
+                <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+              </label>
+            </div>
+
+          <div>
+            <span
+                class="text-xs text-red-500"
+                *ngIf="reportForm.get('step1.petType')?.hasError('required') && reportForm.get('step1.petType')?.touched">
+                El tipo de mascota es requerido
+              </span>
+          </div>
+          </div>
+
+
+          <!-- Género -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Género</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label
+                class="relative flex flex-col items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                <input type="radio" formControlName="gender" value="macho" class="sr-only peer" />
+                <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">♂️</div>
+                <span class="text-sm font-medium text-gray-700 text-center">Macho</span>
+                <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+              </label>
+
+              <label
+                class="relative flex flex-col items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+                <input type="radio" formControlName="gender" value="hembra" class="sr-only peer" />
+                <div class="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">♀️</div>
+                <span class="text-sm font-medium text-gray-700 text-center">Hembra</span>
+                <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+              </label>
+            </div>
+             <div>
+            <span
+                class="text-xs text-red-500"
+                *ngIf="reportForm.get('step1.gender')?.hasError('required') && reportForm.get('step1.gender')?.touched">
+                   El Género de la mascota es requerido
+              </span>
+          </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="mt-6">
+            <label for="petName" class="block text-sm font-medium text-gray-700 mb-2">Nombre de la mascota</label>
+            <input
+              type="text"
+              formControlName="petName"
+              id="petName"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Ej: Firulais" />
+            <div>
+              <span
+                class="text-xs text-red-500"
+                *ngIf="reportForm.get('step1.petName')?.hasError('required') && reportForm.get('step1.petName')?.touched">
+                El nombre de la mascota es requerido
+              </span>
+            </div>
+          </div>
+
+          <!-- Raza -->
+          <div class="mt-6">
+            <label for="breed" class="block text-sm font-medium text-gray-700 mb-2">Raza</label>
+            <input
+              type="text"
+              formControlName="breed"
+              id="breed"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Ej: Golden Retriever, Mestizo" />
+               <span
+                class="text-xs text-red-500"
+                *ngIf="reportForm.get('step1.breed')?.hasError('required') && reportForm.get('step1.breed')?.touched">
+                   La raza de la mascota es requerido
+              </span>
+          </div>
+
+          <!-- Color -->
+          <div>
+            <label for="color" class="block text-sm font-medium text-gray-700 mb-2">Color/Características físicas</label>
+            <input
+              type="text"
+              formControlName="color"
+              id="color"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Ej: Café con blanco, collar azul" />
+              <span
+                class="text-xs text-red-500"
+                *ngIf="reportForm.get('step1.color')?.hasError('required') && reportForm.get('step1.color')?.touched">
+                   El color de la mascota es requerido
+              </span>
+          </div>
+
+          <!-- Foto -->
+          <div>
+              <label for="photo" class="block text-sm font-medium text-gray-700 mb-2">Foto de la mascota</label>
+
+              <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors">
+                <div class="space-y-1 text-center">
+                  <div class="flex text-sm text-gray-600 justify-center items-center gap-2">
+                    <label
+                      for="photo"
+                      class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                      <span>Subir archivo</span>
+                      <input
+                        formControlName="photo"
+                        id="photo"
+                        type="file"
+                        class="sr-only"
+                        accept="image/*"
+                        (change)="onFileSelected($event)" />
+                    </label>
+                    <p>o arrastra y suelta</p>
+                  </div>
+                  <p class="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+
+                  <!-- Preview de la imagen -->
+                  <img *ngIf="photoPreview" [src]="photoPreview" alt="Preview" class="mt-2 max-h-60 mx-auto rounded-lg object-contain" />
+                </div>
+              </div>
+
+              <div>
+                <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step1.photo')?.hasError('required') && reportForm.get('step1.photo')?.touched">
+                  La foto de la mascota es requerida
+                </span>
+              </div>
+            </div>
+
+
+
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            (click)="nextStep()"
+            class="bg-black hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 2" [formGroupName]="'step2'">
+        <h2 class="mt-12 text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+          <span
+            class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3"
+            >2</span
+          >
+          Detalles de la desaparición
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+
+
+          <div class="col-span-1">
+            <div style="height:500px;">
+              <app-map [center_location]="getCenterLocation()" [markers]="getMarkers()"></app-map>
+            </div>
+          </div>
+
+
+          <div class="col-span-1">
+            <p class="text-sm text-gray-900 mt-4">Mueve el marcador para indicar la ubicación de la desaparición</p>
+            <div class="mt-12">
+              <label for="disappearanceDate" class="block text-sm font-medium text-gray-700 mb-2">Fecha de desaparición</label>
+              <input
+                formControlName="disappearanceDate"
+                type="date"
+                id="disappearanceDate"
+                 [max]="today"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
+            </div>
+                <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step2.disappearanceDate')?.hasError('required') && reportForm.get('step2.disappearanceDate')?.touched">
+                    La ubicación de la desaparición es requerido
+                </span>
+                <div class="mt-4">
+                <label for="lastLocation" class="block text-sm font-medium text-gray-700 mb-2">Colonia o zona de la desaparición</label>
+                  <input
+                    formControlName="lastLocation"
+                    type="text"
+                    id="lastLocation"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Colonia, Ejemplo: colonia moderna" />
+                </div>
+
+                 <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step2.lastLocation')?.hasError('required') && reportForm.get('step2.lastLocation')?.touched">
+                    La colonia o zona de la desaparición es requerido
+                </span>
+
+
+              <div class="mt-4" >
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Descripción adicional</label>
+                <textarea
+                  formControlName="description"
+                  id="description"
+                  rows="7"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Describe las circunstancias de la desaparición y cualquier detalle que pueda ayudar..."></textarea>
+              </div>
+
+
+                 <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step2.description')?.hasError('required') && reportForm.get('step2.description')?.touched">
+                    La descripción adicional es requerido
+                </span>
+          </div>
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            (click)="prevStep()"
+            class="bg-gray-300 hover:bg-gray-400 text-black font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Atrás
+          </button>
+          <button
+            type="button"
+            (click)="nextStep()"
+            class="bg-black hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mt-12  md:px-36" *ngIf="step === 3" [formGroupName]="'step3'">
+        <h2 class="mt-12 text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+          <span
+            class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3"
+            >3</span
+          >
+          Datos de contacto
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="ownerName" class="block text-sm font-medium text-gray-700 mb-2">Nombre completo</label>
+            <input
+              formControlName="ownerName"
+              type="text"
+              id="ownerName"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Tu nombre completo" />
+              <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step3.ownerName')?.hasError('required') && reportForm.get('step3.ownerName')?.touched">
+                    El nombre completo es requerido
+                </span>
+          </div>
+
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+            <!-- <input
+              formControlName="phone"
+              type="tel"
+              id="phone"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="+52 55 1234 5678" /> -->
+
+              <app-phone-input formControlName="phone"></app-phone-input>
+               <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step3.phone')?.hasError('required') && reportForm.get('step3.phone')?.touched">
+                    El teléfono es requerido
+                </span>
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
+            <input
+              formControlName="email"
+              type="email"
+              id="email"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="tu@email.com" />
+          </div>
+           <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step3.email')?.hasError('required') && reportForm.get('step3.email')?.touched">
+                    El correo es requerido
+                </span>
+                 <span
+                  class="text-xs text-red-500"
+                  *ngIf="reportForm.get('step3.email')?.hasError('email') && reportForm.get('step3.email')?.touched">
+                    Correo no valido
+             </span>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            (click)="prevStep()"
+            class="bg-gray-300 hover:bg-gray-400 text-black font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Atrás
+          </button>
+          <button
+            type="button"
+            (click)="nextStep()"
+            class="bg-black hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4 -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mt-12  md:px-36" *ngIf="step === 4">
+
+
+      <h3 class="mt-12 text-xl font-semibold text-gray-900 mb-4 flex items-center">
+  <span class="text-2xl mr-2">👁️</span>
+  Vista previa del reporte
+</h3>
+
+<!-- Tabs -->
+<div class="flex mb-4 border-b border-gray-200">
+  <button
+    class="px-4 py-2 focus:outline-none"
+    [ngClass]="{'border-b-2 border-blue-500 font-bold': activeTab === 'facebook'}"
+    (click)="activeTab = 'facebook'">
+    <i class="fa-brands fa-facebook"></i> Facebook
+  </button>
+  <button
+    class="px-4 py-2 focus:outline-none"
+    [ngClass]="{'border-b-2 border-blue-500 font-bold': activeTab === 'instagram'}"
+    (click)="activeTab = 'instagram'">
+    <i class="fa-brands fa-instagram"></i> Instagram
+  </button>
+</div>
+
+<!-- Vista Previa -->
+<div [ngSwitch]="activeTab" class="flex justify-center">
+  <!-- Facebook Preview -->
+
+  <div *ngSwitchCase="'facebook'" class="rounded-lg shadow-sm w-full max-w-xl" style="aspect-ratio: 1200/630;">
+      <div class="max-w-xl mx-auto border rounded-lg shadow-sm bg-white">
+
+        <!-- Header tipo Facebook -->
+        <div class="flex items-center p-4">
+          <img src="https://scontent.fgdl5-5.fna.fbcdn.net/v/t39.30808-6/442398448_742850804706979_2293541786596348389_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=cl2sagTF1esQ7kNvwEpQeUB&_nc_oc=AdmOkgcK3PvembJYP2X9nkBfdIx9KyIm4ivrkJxRvJ7wu8bP1XVSv8WH7y1QrPLe1V8&_nc_zt=23&_nc_ht=scontent.fgdl5-5.fna&_nc_gid=nZ9aFVsoXcVLoEfOcmw7CA&oh=00_AfYXpq5ZdxCgyTl69cW27Gt1fiLbfSJ-2uJjHEbu5Xcvfg&oe=68D0E274" alt="avatar" class="w-10 h-10 rounded-full mr-3">
+          <div class="flex-1">
+            <p class="font-semibold text-gray-800">Wako</p>
+            <p class="text-xs text-gray-500">Publicidad<span class="font-bold"></span></p>
+          </div>
+          <button class="text-gray-500 font-bold">···</button>
+        </div>
+
+        <!-- Texto del post -->
+        <div class="px-4 pb-4 text-sm">
+          ⚠️ ¡Ayúdanos a encontrar a <strong>{{ reportForm.value.step1.petName }}</strong>! ⚠️
+        </div>
+
+        <!-- Imagen principal del post -->
+        <div class="w-full">
+          <img src="https://scontent.fgdl5-3.fna.fbcdn.net/v/t39.30808-6/548420356_1089460290046027_8499484138734210671_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=AQiYRveyNuAQ7kNvwE6GEmb&_nc_oc=Adm1XE1rnL5IDtHYvunuAuorA-bvIKBqyuWipbKX3_qnQjy3dwUEfWeroHQSrWKsass&_nc_zt=23&_nc_ht=scontent.fgdl5-3.fna&_nc_gid=Vq2ltaW4p4nMrsUfiReX3g&oh=00_AfbFEFhGqtoGjK3xwoqpVB-JZ5K9RYFT-rkBG5ds0esMHg&oe=68D0D63A" alt="pet image" class="w-full object-cover">
+        </div>
+
+        <!-- Información adicional estilo post de Wako -->
+        <div class="px-4 py-3 text-sm text-gray-800 border-t">
+          <p><strong>Se perdió en:</strong> {{ reportForm.value.step2.lastLocation }}</p>
+          <p><strong>Contacto:</strong> 📞 {{ reportForm.value.step3.phone }}</p>
+        </div>
+
+        <!-- Footer tipo Facebook -->
+        <div class="flex justify-between px-4 py-2 border-t text-gray-500 text-xs">
+          <span>👍 19</span>
+          <span>💬 16 comentarios</span>
+          <span>↪️ 33 veces compartido</span>
+        </div>
+
+      </div>
+
+
+
+  </div>
+
+   <div *ngSwitchCase="'instagram'" class="rounded-lg shadow-sm w-full max-w-sm" style="aspect-ratio: 1/1;">
+      <!-- Header -->
+    <div class="flex items-center justify-between p-3">
+      <div class="flex items-center space-x-2">
+        <img src="https://scontent.fgdl5-5.fna.fbcdn.net/v/t39.30808-6/442398448_742850804706979_2293541786596348389_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=cl2sagTF1esQ7kNvwEpQeUB&_nc_oc=AdmOkgcK3PvembJYP2X9nkBfdIx9KyIm4ivrkJxRvJ7wu8bP1XVSv8WH7y1QrPLe1V8&_nc_zt=23&_nc_ht=scontent.fgdl5-5.fna&_nc_gid=nZ9aFVsoXcVLoEfOcmw7CA&oh=00_AfYXpq5ZdxCgyTl69cW27Gt1fiLbfSJ-2uJjHEbu5Xcvfg&oe=68D0E274" alt="profile" class="w-10 h-10 rounded-full">
+        <div class="flex flex-col">
+          <span class="font-semibold text-sm">rodrigodebritobusiness</span>
+          <span class="text-xs text-gray-400">Publicidad</span>
+        </div>
+      </div>
+      <div class="text-gray-400 text-xl">⋯</div>
+    </div>
+
+    <!-- Imagen del post -->
+    <div class="w-full">
+      <img src="https://scontent.fgdl5-3.fna.fbcdn.net/v/t39.30808-6/548420356_1089460290046027_8499484138734210671_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=AQiYRveyNuAQ7kNvwE6GEmb&_nc_oc=Adm1XE1rnL5IDtHYvunuAuorA-bvIKBqyuWipbKX3_qnQjy3dwUEfWeroHQSrWKsass&_nc_zt=23&_nc_ht=scontent.fgdl5-3.fna&_nc_gid=Vq2ltaW4p4nMrsUfiReX3g&oh=00_AfbFEFhGqtoGjK3xwoqpVB-JZ5K9RYFT-rkBG5ds0esMHg&oe=68D0D63A" alt="post" class="w-full">
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex justify-between px-3 py-2">
+      <div class="flex space-x-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 15l7-7 7 7"></path>
+        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z"></path>
+        </svg>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v16h16V4H4z"></path>
+        </svg>
+      </div>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <!-- Likes -->
+    <div class="px-3 text-sm font-semibold">15 Me gusta</div>
+
+    <!-- Descripción -->
+    <div class="px-3 py-2 text-sm">
+      <span class="font-semibold">rodrigodebritobusiness</span>
+      ¿Alguna vez pensaste que tu empresa podría ser un ministerio… mientras crece?
+    </div>
+
+
+  </div>
+</div>
+
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>💡 Tip:</strong> Verifica toda la información antes de continuar. Si hay algo incorrecto, tu asesor de búsqueda podrá ayudarte a cambiarlo.
+          </p>
+        </div>
+
+
+       <div class="flex justify-end gap-4 mt-6">
+          <button
+            type="button"
+            (click)="prevStep()"
+            class="bg-gray-300 hover:bg-gray-400 text-black font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Atrás
+          </button>
+          <button
+            type="button"
+            (click)="nextStep()"
+            class="bg-black hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg shadow transition-all duration-200">
+            Siguiente
+          </button>
+        </div>
+
+
+      </div>
+
+
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 5" >
+      <h2>selecciona un plan</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+
+            <!-- Plan Gratis -->
+            <label
+              class="relative flex flex-col items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+              <input type="radio" formControlName="plan" value="gratis" class="sr-only peer" />
+              <div class="text-4xl mb-3">🎁</div>
+              <span class="text-lg font-semibold text-gray-800 mb-1">Gratis</span>
+              <span class="text-sm text-gray-600 text-center">Descarga únicamente el flyer</span>
+              <div class="absolute top-3 right-3 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Gratis</div>
+              <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+            </label>
+
+            <!-- Plan Básico -->
+            <label
+              class="relative flex flex-col items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+              <input type="radio" formControlName="plan" value="basico" class="sr-only peer" />
+              <div class="text-4xl mb-3">💎</div>
+              <span class="text-lg font-semibold text-gray-800 mb-1">Básico</span>
+              <span class="text-sm text-gray-600 text-center">Incluye flyer + publicación en redes básicas</span>
+              <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+            </label>
+
+            <!-- Plan Pro -->
+            <label
+              class="relative flex flex-col items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+              <input type="radio" formControlName="plan" value="pro" class="sr-only peer" />
+              <div class="text-4xl mb-3">🚀</div>
+              <span class="text-lg font-semibold text-gray-800 mb-1">Pro</span>
+              <span class="text-sm text-gray-600 text-center">Incluye flyer + publicidad en varias redes + destacado</span>
+              <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+            </label>
+
+            <!-- Plan Premium -->
+            <label
+              class="relative flex flex-col items-center p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group">
+              <input type="radio" formControlName="plan" value="premium" class="sr-only peer" />
+              <div class="text-4xl mb-3">👑</div>
+              <span class="text-lg font-semibold text-gray-800 mb-1">Premium</span>
+              <span class="text-sm text-gray-600 text-center">Incluye flyer + publicidad máxima + seguimiento destacado</span>
+              <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
+            </label>
+
+        </div>
+
+          <div class="flex justify-center mt-10">
+          <button
+            type="b"
+            class="bg-black hover:bg-blue-700 text-white font-semibold py-4 px-12 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-lg">
+            🚀 Crear Reporte de Búsqueda
+          </button>
+        </div>
+    </div>
+
+
+     <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 6" >
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">¡Reporte creado con éxito!</h2>
+
+      <p class="text-gray-600 mb-4 text-center">Descarga tu flyer en los diferentes formatos:</p>
+
+        <div class="grid grid-cols-2 gap-4">
+             <button
+              (click)="downloadFlyer('instagram-story')"
+              class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg shadow hover:scale-105 transform transition">
+              Descargar Instagram Story
+            </button>
+
+          <!-- <a
+            href="{{instagram_story}}"
+            target="_blank"
+            class="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg shadow hover:scale-105 transform transition">
+            <img src="assets/icons/instagram.svg" alt="Instagram Story" class="w-6 h-6">
+            Instagram Story
+          </a>
+
+          <a
+            href="{{instagram_story}}"
+            target="_blank"
+            class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg shadow hover:scale-105 transform transition">
+            <img src="assets/icons/facebook.svg" alt="Facebook" class="w-6 h-6">
+            Facebook Post
+          </a>
+
+          <a
+            href="{{instagram_story}}"
+            target="_blank"
+            class="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg shadow hover:scale-105 transform transition">
+            <img src="assets/icons/facebook.svg" alt="Facebook Story" class="w-6 h-6">
+            Facebook Story
+          </a> -->
+        </div>
+    </div>
+
+    </form>
+  </div>
+
+</div>

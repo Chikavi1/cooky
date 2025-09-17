@@ -1,0 +1,71 @@
+<div class="relative min-h-screen">
+  <!-- Mapa de fondo -->
+  <div class="absolute inset-0 z-0">
+    <app-map [center_location]="getCenterLocation()" [markers]="getMarkers()"></app-map>
+  </div>
+
+  <!-- Card principal a la izquierda -->
+  <div class="absolute top-10 left-10 z-10 w-[400px] bg-white rounded-lg shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+    <div class="p-6 space-y-6">
+
+      <!-- Pet Info -->
+      <div class="fade-in">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-full bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
+            <img src="https://www.bupasalud.com.mx/sites/default/files/styles/640_x_400/public/articulos/2024-09/fotos/beneficios%20de%20tener%20una%20mascota-1.jpg?itok=HfGQPxj2" alt="Mascota" class="w-full h-full"/>
+          </div>
+          <div></div>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900">Firulais</h2>
+        <p class="text-sm text-gray-600">Perro • Macho • Golden Retriever • Café con blanco</p>
+      </div>
+
+      <!-- Missing Info -->
+      <div class="space-y-2">
+        <h3 class="text-lg font-semibold text-gray-800">Última ubicación</h3>
+        <p class="text-sm text-gray-600">Parque Central, Col. Roma Norte</p>
+
+        <h3 class="text-lg font-semibold text-gray-800 mt-3">Descripción</h3>
+        <p class="text-sm text-gray-600">Desapareció cerca del parque jugando con una pelota. Tiene collar azul y responde a su nombre.</p>
+      </div>
+
+      <!-- Owner Info -->
+      <div class="space-y-2 mt-4">
+        <h3 class="text-lg font-semibold text-gray-800">Dueño</h3>
+        <p class="text-sm text-gray-600">Juan Pérez</p>
+        <p class="text-sm text-gray-600">📞 +52 55 1234 5678</p>
+        <p class="text-sm text-gray-600">💌 juanemail.com</p>
+        <p class="text-sm text-gray-600">Reporte creado: sabado 3 de octubre de 2023</p>
+      </div>
+
+      <!-- Reward Info -->
+      <div class="space-y-2 mt-4">
+        <h3 class="text-lg font-semibold text-gray-800">Recompensa</h3>
+        <p class="text-sm text-gray-600">💰 $1,000 MXN por información que ayude a encontrarlo</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-3 pt-4">
+        <button class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+          <i class="fas fa-phone"></i>
+          <span>Contactar al dueño</span>
+        </button>
+
+        <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+          <i class="fas fa-question-circle"></i>
+          <span>Ayuda</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Card de probabilidad a la derecha -->
+  <div class="absolute bottom-20 right-10 z-10 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 p-4">
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">Probabilidad de encontrarlo</h3>
+    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+      <div class="h-4 rounded-full" style="width: 70%; background-color: #f97316;"></div>
+    </div>
+    <p class="text-sm text-gray-600 mt-1">70% de cercanía según última ubicación reportada</p>
+  </div>
+</div>

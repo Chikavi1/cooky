@@ -1,0 +1,105 @@
+.phone-input {
+    position: relative;
+    display: inline-flex; /* para que tome solo el ancho necesario */
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: visible;
+    background: white;
+
+  }
+
+
+  .flag-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 10px;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    user-select: none;
+  }
+
+  .flag-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .arrow {
+    margin-left: 6px;
+    transition: transform 0.3s ease;
+  }
+
+  .arrow.open {
+    transform: rotate(180deg);
+  }
+
+  .phone-field {
+    flex: 1;
+    border: none;
+    font-size: 1rem;
+    padding: 8px 10px;
+    outline: none;
+  }
+
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 180px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    z-index: 9999;
+    display: block;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  .dropdown li {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: black;
+  }
+
+  .dropdown li:hover {
+    background-color: #eee;
+  }
+
+
+  .flag {
+    font-size: 1.5rem;
+  }
+
+  .name {
+    flex: 1;
+  }
+
+  .dial {
+    font-weight: 600;
+    color: #555;
+  }
+
+
+
+.dropdown .search-box {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .dropdown .search-box input {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+  }
+
+  .no-results {
+    padding: 8px 12px;
+    color: #999;
+    font-style: italic;
+  }
