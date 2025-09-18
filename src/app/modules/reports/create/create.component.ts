@@ -1,67 +1,78 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MapComponent } from "../../../shared/components/map/map.component";
 import { PhoneInputComponent } from "../../../shared/phone-input/phone-input.component";
 import { PaymentComponent } from '../../../shared/components/payment/payment.component';
 import { HttpClientModule } from '@angular/common/http';
+import { ApiService } from '../../../shared/services/api.service';
 
 @Component({
   selector: 'app-create',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MapComponent, PaymentComponent, PhoneInputComponent,HttpClientModule],
+  providers:[ApiService],
   templateUrl: './create.component.html',
   styleUrl: './create.component.scss'
 })
 export class CreateComponent {
   reportForm: FormGroup;
-  step = 5;
+  step = 2;
   today = '';
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
 
   photoPreview: string | ArrayBuffer | null = null;
+  photoFile: File | null = null;
+  apiService = inject(ApiService);
 
-onFileSelected(event: Event) {
-  const input = event.target as HTMLInputElement;
-  if (!input.files?.length) return;
 
-  const file = input.files[0];
+  onFileSelected(event: any) {
+  const file: File = event.target.files[0];
+  if (!file) return;
 
-  // Validar tamaño si quieres
-  if (file.size > 10 * 1024 * 1024) {
-    alert("El archivo debe ser menor a 10MB");
+  // Limitar tamaño si quieres
+  if (file.size > 10 * 1024 * 1024) { // 10MB
+    alert('La imagen es demasiado grande');
     return;
   }
 
-  // Mostrar preview
+  this.photoFile = file;
+
+  // Preview
   const reader = new FileReader();
-  reader.onload = () => {
-    this.photoPreview = reader.result;
+  reader.onload = (e) => {
+    this.photoPreview = e.target?.result || null; // <-- aquí
   };
   reader.readAsDataURL(file);
 
-  // Actualizar el form control
-  this.reportForm.get('step1.photo')?.setValue(file);
-
-  // Subir al backend automáticamente
-  this.uploadPhoto(file);
+    this.uploadPhoto();
 }
 
-// Función para subir al backend
-uploadPhoto(file: File) {
-  const formData = new FormData();
-  formData.append('photo', file);
 
-  // this.http.post('http://localhost:3000/api/v1/upload', formData).subscribe({
-  //   next: (res: any) => {
-  //     console.log("Foto subida correctamente:", res);
-  //     // Si el backend devuelve la URL, la puedes guardar en el form para luego generar el flyer
-  //     this.reportForm.get('step1.photo')?.setValue(res.url);
-  //   },
-  //   error: (err) => console.error("Error subiendo la foto:", err)
-  // });
-}
+  uploadPhoto() {
+    if (!this.photoFile) return;
+
+    const formData = new FormData();
+    formData.append('file', this.photoFile);
+
+    this.apiService.post<{message?: string, url?: string, error?: string}>('marketing/upload', formData)
+      .subscribe({
+        next: res => {
+          console.log("res",res)
+          if (res.error) {
+            alert('Imagen no válida: ' + res.error);
+          } else {
+            alert('Imagen subida correctamente!');
+            console.log('URL:', res.url);
+          }
+        },
+        error: err => {
+          console.error(err);
+          alert('Error subiendo la imagen');
+        }
+      });
+  }
 
 ngOnInit() {
   const now = new Date();
@@ -84,7 +95,7 @@ onLocationSelected(coords: [number, number]) {
   });
 }
 
-  
+
 
 
   constructor(private fb: FormBuilder) {
@@ -95,21 +106,23 @@ onLocationSelected(coords: [number, number]) {
         petName: ['', Validators.required],
         breed: ['',Validators.required],
         color: [''],
-        photo: ['',Validators.required]
       }),
       step2: this.fb.group({
+            photo: ['',Validators.required]
+      }),
+      step3: this.fb.group({
         lastLocation: ['', Validators.required],
         disappearanceDate: ['', Validators.required],
         latitude: [],
         longitude: [],
         description: ['']
       }),
-      step3: this.fb.group({
+      step4: this.fb.group({
         ownerName: ['', Validators.required],
         phone: ['', [Validators.required]],
         email: ['', [Validators.required, Validators.email]]
       }),
-      step4: this.fb.group({
+      step5: this.fb.group({
         plan: ['']
       })
     });
@@ -119,7 +132,7 @@ onLocationSelected(coords: [number, number]) {
   nextStep() {
     const stepGroup = this.getCurrentStepGroup();
     console.log(this.step)
-    if ( this.step === 4 || stepGroup.valid) {
+    if ( this.step === 5 || stepGroup.valid) {
       this.step++;
     } else {
       stepGroup.markAllAsTouched();
