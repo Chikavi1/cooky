@@ -216,7 +216,12 @@
 
           <div class="col-span-1">
             <div style="height:500px;">
-              <app-map [center_location]="getCenterLocation()" [markers]="getMarkers()"></app-map>
+              <app-map
+                [center_location]="[20.6736, -103.344]"
+                mode="create"
+                selectionMode="center"
+                (locationSelected)="onLocationSelected($event)">
+              </app-map>
             </div>
           </div>
 
@@ -531,9 +536,9 @@
 
 
 
-    <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 5" >
+    <div class="bg-white rounded-xl shadow-sm p-6 mt-12 md:px-36" *ngIf="step === 5" [formGroupName]="'step4'">
       <h2>selecciona un plan</h2>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6" f>
 
             <!-- Plan Gratis -->
             <label
@@ -576,6 +581,12 @@
               <div class="absolute inset-0 border-2 border-transparent rounded-xl peer-checked:border-green-600"></div>
             </label>
 
+
+
+        </div>
+
+        <div class="mt-12">
+          <app-payment class="w-full mt-12"></app-payment>
         </div>
 
           <div class="flex justify-center mt-10">

@@ -3,17 +3,19 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MapComponent } from "../../../shared/components/map/map.component";
 import { PhoneInputComponent } from "../../../shared/phone-input/phone-input.component";
+import { PaymentComponent } from '../../../shared/components/payment/payment.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MapComponent, PhoneInputComponent],
+  imports: [CommonModule, ReactiveFormsModule, MapComponent, PaymentComponent, PhoneInputComponent,HttpClientModule],
   templateUrl: './create.component.html',
   styleUrl: './create.component.scss'
 })
 export class CreateComponent {
   reportForm: FormGroup;
-  step = 4;
+  step = 5;
   today = '';
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
@@ -61,8 +63,7 @@ uploadPhoto(file: File) {
   // });
 }
 
-
-  ngOnInit() {
+ngOnInit() {
   const now = new Date();
   const year = now.getFullYear();
   const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Mes de 2 dígitos
@@ -71,6 +72,19 @@ uploadPhoto(file: File) {
 }
 
  activeTab: 'facebook' | 'instagram' = 'facebook';
+
+
+
+onLocationSelected(coords: [number, number]) {
+  console.log('Nueva ubicación seleccionada:', coords);
+
+  this.reportForm.get('step2')?.patchValue({
+    latitude: coords[0],
+    longitude: coords[1]
+  });
+}
+
+  
 
 
   constructor(private fb: FormBuilder) {
@@ -86,12 +100,17 @@ uploadPhoto(file: File) {
       step2: this.fb.group({
         lastLocation: ['', Validators.required],
         disappearanceDate: ['', Validators.required],
+        latitude: [],
+        longitude: [],
         description: ['']
       }),
       step3: this.fb.group({
         ownerName: ['', Validators.required],
         phone: ['', [Validators.required]],
         email: ['', [Validators.required, Validators.email]]
+      }),
+      step4: this.fb.group({
+        plan: ['']
       })
     });
   }
