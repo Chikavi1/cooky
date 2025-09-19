@@ -17,7 +17,7 @@ import { ApiService } from '../../../shared/services/api.service';
 })
 export class CreateComponent {
   reportForm: FormGroup;
-  step = 2;
+  step = 1;
   today = '';
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
