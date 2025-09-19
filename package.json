@@ -5,8 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-      "postbuild": "mkdir -p dist/cooky/browser && cp _redirects dist/cooky/browser/_redirects",
-    "watch": "ng build --watch --configuration development",
+     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
   "private": true,
