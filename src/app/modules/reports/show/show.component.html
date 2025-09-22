@@ -1,71 +1,170 @@
 <div class="relative min-h-screen">
-  <!-- Mapa de fondo -->
-  <div class="absolute inset-0 z-0">
-    <app-map [center_location]="getCenterLocation()" [markers]="getMarkers()" mode="view"></app-map>
-  </div>
 
-  <!-- Card principal a la izquierda -->
-  <div class="absolute top-10 left-10 z-10 w-[400px] bg-white rounded-lg shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
-    <div class="p-6 space-y-6">
+    <!-- Overlay para drawer móvil -->
+    <div *ngIf="drawerOpen" class="fixed inset-0 z-5 bg-black bg-opacity-30 sm:hidden" (click)="drawerOpen = false"></div>
 
-      <!-- Pet Info -->
-      <div class="fade-in">
-        <div class="flex items-center space-x-4 mb-4">
-          <div class="w-full bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
-            <img src="https://www.bupasalud.com.mx/sites/default/files/styles/640_x_400/public/articulos/2024-09/fotos/beneficios%20de%20tener%20una%20mascota-1.jpg?itok=HfGQPxj2" alt="Mascota" class="w-full h-full"/>
-          </div>
-          <div></div>
+    <!-- Mapa de fondo siempre visible -->
+    <div class="absolute inset-0 z-0">
+        <app-map [center_location]="getCenterLocation()" [markers]="getMarkers()" mode="view"></app-map>
+    </div>
+
+    <!-- ===========================
+       DESKTOP/TABLET VERSION
+       =========================== -->
+    <div class="hidden sm:block">
+
+        <!-- Card principal izquierda -->
+        <div class="absolute top-10 left-10 z-10 w-[400px] bg-white rounded-lg shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 space-y-6">
+                <!-- Pet Info -->
+                <div class="fade-in">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-full bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
+                            <img src="https://www.bupasalud.com.mx/sites/default/files/styles/640_x_400/public/articulos/2024-09/fotos/beneficios%20de%20tener%20una%20mascota-1.jpg?itok=HfGQPxj2" alt="Mascota" class="w-full h-full object-cover" />
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">{{data[0].name}}</h2>
+                    <p class="text-sm text-gray-600">{{data[0].petType}} • {{data[0].gender}} • {{data[0].breed}} • {{data[0].color}}</p>
+                </div>
+
+                <!-- Missing Info -->
+                <div class="space-y-2">
+                    <h3 class="text-lg font-semibold text-gray-800">Última ubicación</h3>
+                    <p class="text-sm text-gray-600">{{data[0].location}}</p>
+
+                    <h3 class="text-lg font-semibold text-gray-800 mt-3">Descripción</h3>
+                    <p class="text-sm text-gray-600">{{data[0].description}}</p>
+                </div>
+
+                <!-- Owner Info -->
+                <div class="space-y-2 mt-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Dueño</h3>
+                    <p class="text-sm text-gray-600">{{data[0].ownerName}}</p>
+                    <p class="text-sm text-gray-600"><i class="fa-solid fa-phone-volume"></i> {{data[0].phone}}</p>
+                    <p class="text-sm text-gray-600"><i class="fa-solid fa-envelope"></i>{{data[0].email}}</p>
+                    <p class="text-sm text-gray-600"><i class="fa-solid fa-calendar-days"></i> {{ data[0].missingDate | date: "EEEE d 'de' MMMM 'del' y" }}</p>
+                </div>
+
+                <!-- Reward Info -->
+                <div class="space-y-2 mt-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Recompensa</h3>
+                    <p class="text-sm text-gray-600">💰{{data[0].reward}} MXN por información que ayude a encontrarlo</p>
+                </div>
+
+
+
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 pt-4">
+                    <button class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-phone"></i>
+                    <span>Contactar al dueño</span>
+                  </button>
+
+                    <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Ayuda</span>
+                  </button>
+                </div>
+
+
+
+            </div>
         </div>
-        <h2 class="text-xl font-bold text-gray-900">Firulais</h2>
-        <p class="text-sm text-gray-600">Perro • Macho • Golden Retriever • Café con blanco</p>
-      </div>
 
-      <!-- Missing Info -->
-      <div class="space-y-2">
-        <h3 class="text-lg font-semibold text-gray-800">Última ubicación</h3>
-        <p class="text-sm text-gray-600">Parque Central, Col. Roma Norte</p>
+        <div class="absolute bottom-40 right-10 z-10 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 p-4">
+            <app-share-buttons></app-share-buttons>
 
-        <h3 class="text-lg font-semibold text-gray-800 mt-3">Descripción</h3>
-        <p class="text-sm text-gray-600">Desapareció cerca del parque jugando con una pelota. Tiene collar azul y responde a su nombre.</p>
-      </div>
+        </div>
 
-      <!-- Owner Info -->
-      <div class="space-y-2 mt-4">
-        <h3 class="text-lg font-semibold text-gray-800">Dueño</h3>
-        <p class="text-sm text-gray-600">Juan Pérez</p>
-        <p class="text-sm text-gray-600">📞 +52 55 1234 5678</p>
-        <p class="text-sm text-gray-600">💌 juanemail.com</p>
-        <p class="text-sm text-gray-600">Reporte creado: sabado 3 de octubre de 2023</p>
-      </div>
+        <!-- Card de probabilidad derecha -->
+        <div *ngIf="filteredData.length > 0 && userLocation" class="absolute bottom-20 right-10 z-10 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Probabilidad de encontrarlo</h3>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div class="h-4 rounded-full transition-all duration-500" [style.width.%]="probability" [style.backgroundColor]="'#f97316'"></div>
+            </div>
+            <p class="text-sm text-gray-600 mt-1">
+                {{ probability | number:'1.0-0' }}% de cercanía según última ubicación reportada
+            </p>
+        </div>
 
-      <!-- Reward Info -->
-      <div class="space-y-2 mt-4">
-        <h3 class="text-lg font-semibold text-gray-800">Recompensa</h3>
-        <p class="text-sm text-gray-600">💰 $1,000 MXN por información que ayude a encontrarlo</p>
-      </div>
+    </div>
 
-      <!-- Action Buttons -->
-      <div class="space-y-3 pt-4">
-        <button class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+    <!-- ===========================
+       MOBILE VERSION
+       =========================== -->
+    <div class="sm:hidden">
+
+        <!-- Botón flotante para abrir drawer -->
+        <button class="fixed bottom-4 right-4 z-20 bg-orange-500 text-white p-3 rounded-full shadow-lg" (click)="drawerOpen = !drawerOpen">
+      <i class="fas fa-info"></i>
+    </button>
+
+        <!-- Drawer deslizable -->
+        <div [ngClass]="{'translate-y-0': drawerOpen, 'translate-y-[calc(85vh-60px)]': !drawerOpen}" class="fixed bottom-0 left-0 w-full max-h-[85vh] bg-white rounded-t-2xl shadow-2xl border border-gray-200 p-4
+                transition-transform duration-300 ease-in-out z-10 overflow-y-auto">
+
+            <!-- Indicador de arrastre -->
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
+
+            <!-- Pet Info -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-center">
+                    <img src="https://www.bupasalud.com.mx/sites/default/files/styles/640_x_400/public/articulos/2024-09/fotos/beneficios%20de%20tener%20una%20mascota-1.jpg?itok=HfGQPxj2" alt="Mascota" class="w-full max-w-[200px] h-auto rounded-xl object-cover" />
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 text-center">{{data[0].name}}</h2>
+                <p class="text-sm text-gray-600 text-center">{{data[0].petType}} • {{data[0].gender}} • {{data[0].breed}} • {{data[0].color}}</p>
+            </div>
+
+            <!-- Missing Info -->
+            <div class="mt-4 space-y-2">
+                <h3 class="text-lg font-semibold text-gray-800">Última ubicación</h3>
+                <p class="text-sm text-gray-600">{{data[0].location}}</p>
+
+                <h3 class="text-lg font-semibold text-gray-800 mt-2">Descripción</h3>
+                <p class="text-sm text-gray-600">{{data[0].description}}</p>
+            </div>
+
+            <!-- Owner Info -->
+            <div class="mt-4 space-y-2">
+                <h3 class="text-lg font-semibold text-gray-800">Dueño</h3>
+                <p class="text-sm text-gray-600">{{data[0].ownerName}}</p>
+                <p class="text-sm text-gray-600">📞 {{data[0].phone}}</p>
+                <p class="text-sm text-gray-600">💌 {{data[0].email}}</p>
+                <p class="text-sm text-gray-600">{{data[0].missingDate}}</p>
+            </div>
+
+            <!-- Reward Info -->
+            <div class="mt-4 space-y-2">
+                <h3 class="text-lg font-semibold text-gray-800">Recompensa</h3>
+                <p class="text-sm text-gray-600">💰{{data[0].reward}} MXN por información que ayude a encontrarlo</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 space-y-3">
+                <button class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
           <i class="fas fa-phone"></i>
           <span>Contactar al dueño</span>
         </button>
 
-        <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
           <i class="fas fa-question-circle"></i>
           <span>Ayuda</span>
         </button>
-      </div>
+            </div>
 
-    </div>
-  </div>
+            <!-- Probabilidad -->
+            <div *ngIf="filteredData.length > 0 && userLocation" class="mt-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Probabilidad de encontrarlo</h3>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div class="h-4 rounded-full transition-all duration-500" [style.width.%]="probability" [style.backgroundColor]="'#f97316'"></div>
+                </div>
+                <p class="text-sm text-gray-600 mt-1">
+                    {{ probability | number:'1.0-0' }}% de cercanía según última ubicación reportada
+                </p>
+            </div>
 
-  <!-- Card de probabilidad a la derecha -->
-  <div class="absolute bottom-20 right-10 z-10 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 p-4">
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">Probabilidad de encontrarlo</h3>
-    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-      <div class="h-4 rounded-full" style="width: 70%; background-color: #f97316;"></div>
+        </div>
     </div>
-    <p class="text-sm text-gray-600 mt-1">70% de cercanía según última ubicación reportada</p>
-  </div>
+
 </div>

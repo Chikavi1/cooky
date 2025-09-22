@@ -33,11 +33,11 @@ export class PaymentComponent implements AfterViewInit {
     this.card = this.elements!.create('card', {
       style: {
         base: {
-          color: '#1a202c',                 // texto
+          color: '#1a202c',
           fontFamily: '"Inter", sans-serif',
           fontSize: '16px',
           '::placeholder': { color: '#a0aec0' },
-          padding: '0',                      // ⚡ Importante: quitamos padding para que se ajuste al div
+          padding: '0',
         },
         invalid: {
           color: '#e53e3e',
@@ -46,12 +46,8 @@ export class PaymentComponent implements AfterViewInit {
       },
       hidePostalCode: true
     });
-    
+
     this.card.mount(this.cardElement!.nativeElement);
-    
-    // 
-
-
   }
 
   async pay() {

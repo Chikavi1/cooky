@@ -6,7 +6,7 @@ import { IndexComponent } from './modules/partners/index/index.component';
 export const routes: Routes = [
   { path: '', redirectTo: 'reportes', pathMatch: 'full' },
   { path: 'report', component: CreateComponent },
-  { path: 'report/:id', component: ShowComponent },
+  { path: 'report/:code', component: ShowComponent },
   { path: 'partners', component: IndexComponent }
 ];
 

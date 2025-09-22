@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MapComponent } from "../../../shared/components/map/map.component";
 import { PhoneInputComponent } from "../../../shared/phone-input/phone-input.component";
@@ -16,15 +16,25 @@ import { ApiService } from '../../../shared/services/api.service';
   styleUrl: './create.component.scss'
 })
 export class CreateComponent {
+  @ViewChild('paymentComponent') paymentComponent!: PaymentComponent;
+
   reportForm: FormGroup;
   step = 1;
   today = '';
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
 
+  plan='premium';
+
   photoPreview: string | ArrayBuffer | null = null;
   photoFile: File | null = null;
   apiService = inject(ApiService);
+
+  triggerPayment() {
+    if (this.paymentComponent) {
+      this.paymentComponent.pay();
+    }
+  }
 
 
   onFileSelected(event: any) {
@@ -89,7 +99,7 @@ ngOnInit() {
 onLocationSelected(coords: [number, number]) {
   console.log('Nueva ubicación seleccionada:', coords);
 
-  this.reportForm.get('step2')?.patchValue({
+  this.reportForm.get('step3')?.patchValue({
     latitude: coords[0],
     longitude: coords[1]
   });
@@ -99,6 +109,13 @@ onLocationSelected(coords: [number, number]) {
 
 
   constructor(private fb: FormBuilder) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
+    const day = String(today.getDate()).padStart(2, '0');
+
+    const formattedToday = `${year}-${month}-${day}`;
+
     this.reportForm = this.fb.group({
       step1: this.fb.group({
         petType: ['', Validators.required],
@@ -112,7 +129,7 @@ onLocationSelected(coords: [number, number]) {
       }),
       step3: this.fb.group({
         lastLocation: ['', Validators.required],
-        disappearanceDate: ['', Validators.required],
+        disappearanceDate: [formattedToday, Validators.required],
         latitude: [],
         longitude: [],
         description: ['']
@@ -120,7 +137,8 @@ onLocationSelected(coords: [number, number]) {
       step4: this.fb.group({
         ownerName: ['', Validators.required],
         phone: ['', [Validators.required]],
-        email: ['', [Validators.required, Validators.email]]
+        email: ['', [Validators.required, Validators.email]],
+        notifications: [true]
       }),
       step5: this.fb.group({
         plan: ['']
@@ -151,23 +169,37 @@ onLocationSelected(coords: [number, number]) {
 
   // ✅ Enviar reporte
   createReport() {
-    if (this.reportForm.invalid) {
-      this.reportForm.markAllAsTouched();
-      return;
-    }
-
-    const payload = {
-      ...this.reportForm.value.step1,
-      ...this.reportForm.value.step2,
-      ...this.reportForm.value.step3,
-    };
-
-    console.log('📤 Payload final:', payload);
-
-    // Aquí iría tu POST al backend
-    // this.http.post('/api/report', payload).subscribe(...)
+  if (this.reportForm.invalid) {
+    this.reportForm.markAllAsTouched();
+    return;
   }
 
+  this.triggerPayment();
+
+  const payload = {
+    ...this.reportForm.value.step1,
+    ...this.reportForm.value.step2,
+    ...this.reportForm.value.step3,
+    ...this.reportForm.value.step4,
+    ...this.reportForm.value.step5,
+    fbAdId: '123456789',
+    plan: this.plan,
+    paymentId: 'pay_987654321'
+  };
+
+  console.log('📤 Payload final:', payload);
+
+  this.apiService.post('reports', payload).subscribe({
+    next: (res) => {
+      this.step = 7;
+    },
+    error: (err) => console.error('❌ Error creating report:', err)
+  });
+}
+
+selectPlan(plan:any){
+  this.plan = plan;
+}
 
   getCenterLocation(): [number, number] {
     return [20.621378, -103.303955];

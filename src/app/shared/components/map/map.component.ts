@@ -22,6 +22,11 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
     this.initMap();
+
+    // Asegúrate de actualizar tamaño después de que Angular renderiza el contenedor
+    setTimeout(() => {
+      this.map.invalidateSize();
+    }, 100);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -37,31 +42,33 @@ export class MapComponent implements AfterViewInit, OnChanges {
       iconSize: [32, 32],
       iconAnchor: [16, 32]
     });
-  
+
     // Marker en el centro (no draggable)
     const center = this.map.getCenter();
     const pin = L.marker(center, { icon: pinIcon, interactive: false }).addTo(this.map);
-  
+
     // Cada vez que se mueve el mapa, el marker se mantiene en el centro
     this.map.on('move', () => {
       const newCenter = this.map.getCenter();
       pin.setLatLng(newCenter);
     });
-  
+
     // Cuando termina de moverse, emite la ubicación seleccionada
     this.map.on('moveend', () => {
       const coords = this.map.getCenter();
       this.locationSelected.emit([coords.lat, coords.lng]);
     });
   }
-  
+
 
   private initMap() {
   this.map = L.map('map', { zoomControl: false }).setView(this.center_location, 13);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(this.map);
+  let language = localStorage.getItem('language')?localStorage.getItem('language'):'en';
+
+  const  tile = 'https://mt0.google.com/vt/lyrs=m&hl='+language+'&x={x}&y={y}&z={z}&s=Ga';
+
+  L.tileLayer(tile).addTo(this.map);
 
   if (this.mode === 'view') {
     this.updateMarkers();
@@ -92,7 +99,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
             border-radius: 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           ">
-            <img src="${m.imageUrl || 'https://placekitten.com/32/32'}"
+            <img src="${m.imageUrl }"
                  style="width:32px; height:32px; border-radius:50%; margin-right:8px;" />
             <div>
               <div style="font-weight:bold;">${m.title || 'Marker'}</div>
