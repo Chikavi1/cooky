@@ -29,7 +29,7 @@ export class CreateComponent {
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
   plan= 'premium';
-  currency: string | null = null;
+  currency: string | null = 'MXN';
 
   prices:any = [];
   priceId:string = '';
@@ -80,6 +80,25 @@ export class CreateComponent {
     this.transform = { scale: this.scale };
   }
 
+  dropError: string | null = null;
+  onDragOver(event: DragEvent) {
+    event.preventDefault(); // importante para permitir el drop
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.dropError = null; // resetea el error
+    const file = event.dataTransfer?.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.dropError = 'Solo se permiten archivos de imagen';
+      return;
+    }
+
+    this.onFileSelected({ target: { files: [file] } });
+  }
 
   onFileSelected(event: any) {
   const file: File = event.target.files[0];
