@@ -15,7 +15,9 @@ export class StripeService {
   }
 
   // Llama al backend para crear el PaymentIntent
-  createPaymentIntent(amount: number, currency = 'mxn') {
-    return firstValueFrom(this.http.post<{clientSecret:string}>(`${this.baseUrl}/reports/test`, { amount, currency }));
+  createPaymentIntent(priceId: string) {
+    return firstValueFrom(
+      this.http.post<{ clientSecret: string }>(`${this.baseUrl}/reports/test`, { priceId })
+    );
   }
 }

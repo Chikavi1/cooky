@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, Input, SimpleChanges } from '@angular/core';
 import { Stripe, StripeElements } from '@stripe/stripe-js';
 import { StripeService } from '../../services/stripe.service';
 import { HttpClientModule } from '@angular/common/http';
@@ -13,12 +13,14 @@ import { HttpClientModule } from '@angular/common/http';
 })
 export class PaymentComponent implements AfterViewInit {
   @ViewChild('cardElement') cardElement!: ElementRef;
+
+  @Input() priceId: string = '';
   stripe!: Stripe | null;
   elements?: StripeElements | null;
   card?: any;
   clientSecret?: string;
   loading = false;
-  amount = 1000;
+  amount = 4900;
 
   constructor(private stripeService: StripeService) {}
 
@@ -50,20 +52,30 @@ export class PaymentComponent implements AfterViewInit {
     this.card.mount(this.cardElement!.nativeElement);
   }
 
-  async pay() {
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['priceId']) {
+      console.log('🔄 priceId recibido en PaymentComponent:', this.priceId);
+    }
+  }
+
+
+
+  async pay( ) {
     if (!this.stripe || !this.card) return;
 
     try {
       this.loading = true;
 
-      // 1) Pedir clientSecret al backend
-      const resp = await this.stripeService.createPaymentIntent(this.amount, 'mxn');
+      // 1) Pedir clientSecret al backend usando priceId
+      const resp = await this.stripeService.createPaymentIntent(this.priceId);
       this.clientSecret = resp.clientSecret;
 
       // 2) Confirmar pago
       const result = await this.stripe.confirmCardPayment(this.clientSecret!, {
         payment_method: { card: this.card }
       });
+
+      console.log('result', result);
 
       if (result.error) {
         alert(result.error.message);
@@ -77,4 +89,6 @@ export class PaymentComponent implements AfterViewInit {
       this.loading = false;
     }
   }
+
+
 }

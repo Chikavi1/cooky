@@ -1,17 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MapComponent } from "../../../shared/components/map/map.component";
 import { PhoneInputComponent } from "../../../shared/phone-input/phone-input.component";
 import { PaymentComponent } from '../../../shared/components/payment/payment.component';
 import { HttpClientModule } from '@angular/common/http';
 import { ApiService } from '../../../shared/services/api.service';
+import { TextEditorComponent } from "../../../shared/components/text-editor/text-editor.component";
+import {  ImageCropperComponent, ImageTransform } from 'ngx-image-cropper';
+import { GeocodeService } from '../../../shared/services/geocode.service';
 
 @Component({
   selector: 'app-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MapComponent, PaymentComponent, PhoneInputComponent,HttpClientModule],
-  providers:[ApiService],
+  imports: [CommonModule,
+    ReactiveFormsModule, MapComponent, PaymentComponent, PhoneInputComponent, HttpClientModule,
+    ImageCropperComponent],
+  providers:[ApiService,GeocodeService],
   templateUrl: './create.component.html',
   styleUrl: './create.component.scss'
 })
@@ -23,12 +28,21 @@ export class CreateComponent {
   today = '';
 
   instagram_story = 'http://localhost:3000/api/v1/marketing/generate-flyer?format=instagram-story&name=Firulais&species=Perro&color=Marron&lastSeen=Av.%20Principal%20123%2C%20CDMX&description=Muy%20amistoso%2C%20responde%20a%20su%20nombre&imageUrl=https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg'
+  plan= 'premium';
+  currency: string | null = null;
 
-  plan='premium';
+  prices:any = [];
+  priceId:string = '';
 
   photoPreview: string | ArrayBuffer | null = null;
   photoFile: File | null = null;
   apiService = inject(ApiService);
+  geocodeservice = inject(GeocodeService);
+
+
+  transform: any = {};
+  scale = 1;
+
 
   triggerPayment() {
     if (this.paymentComponent) {
@@ -36,27 +50,61 @@ export class CreateComponent {
     }
   }
 
+   imageChangedEvent: any = '';
+
+
+ imageCropped(event: any) {
+  this.photoPreview = event.objectUrl; // preview directo en <img>
+
+  const control = this.reportForm.get('step2.photo');
+  control?.setValue(event.blob); // o guardas el blob en el form
+  control?.markAsTouched();
+  control?.updateValueAndValidity();
+}
+
+
+  // changeCurrency(event:any){
+  //   let newCurrency = event.target.value;
+  //   this.currency = newCurrency.toUpperCase();
+  //   console.log('curren',this.currency)
+  //   this.getPrices()
+  // }
+
+   zoomIn() {
+    this.scale += 0.1;
+    this.transform = { scale: this.scale };
+  }
+
+  zoomOut() {
+    this.scale = Math.max(0.1, this.scale - 0.1);
+    this.transform = { scale: this.scale };
+  }
+
 
   onFileSelected(event: any) {
   const file: File = event.target.files[0];
   if (!file) return;
 
-  // Limitar tamaño si quieres
-  if (file.size > 10 * 1024 * 1024) { // 10MB
+  if (file.size > 10 * 1024 * 1024) {
     alert('La imagen es demasiado grande');
     return;
   }
 
   this.photoFile = file;
+  this.imageChangedEvent = event;
+  this.zoomOut();
 
-  // Preview
   const reader = new FileReader();
   reader.onload = (e) => {
-    this.photoPreview = e.target?.result || null; // <-- aquí
+    this.photoPreview = e.target?.result || null;
+
+    // ✅ Llenar el FormControl
+    const control = this.reportForm.get('step2.photo');
+    control?.setValue(this.photoPreview);
+    control?.markAsTouched();
+    control?.updateValueAndValidity();
   };
   reader.readAsDataURL(file);
-
-    this.uploadPhoto();
 }
 
 
@@ -106,6 +154,12 @@ onLocationSelected(coords: [number, number]) {
 }
 
 
+  getPrices(currency:string){
+    this.apiService.post('reports/prices',{currency:  currency}).subscribe( (data: any) =>{
+      this.prices = data;
+      console.log(this.prices)
+    });
+  }
 
 
   constructor(private fb: FormBuilder) {
@@ -144,12 +198,25 @@ onLocationSelected(coords: [number, number]) {
         plan: ['']
       })
     });
+
   }
 
   // ✅ Validar y avanzar al siguiente paso
   nextStep() {
     const stepGroup = this.getCurrentStepGroup();
-    console.log(this.step)
+    console.log(this.step);
+
+    const latitude = this.reportForm.get('step3.latitude')?.value;
+    const longitude = this.reportForm.get('step3.longitude')?.value;
+
+    if(this.step === 2){
+
+    }
+
+    if(this.step === 3){
+      this.getCurrency(latitude,longitude);
+     }
+
     if ( this.step === 5 || stepGroup.valid) {
       this.step++;
     } else {
@@ -199,6 +266,12 @@ onLocationSelected(coords: [number, number]) {
 
 selectPlan(plan:any){
   this.plan = plan;
+  if(plan !== 'free'){
+    this.priceId  =  this.prices.plans[plan].id;
+    console.log('priceID: ',this.priceId)
+  }else{
+    this.priceId = "";
+  }
 }
 
   getCenterLocation(): [number, number] {
@@ -216,6 +289,22 @@ selectPlan(plan:any){
 
 
     ];
+  }
+
+  getCurrency(lat: number, lng: number) {
+
+    this.apiService.getCurrencyFromLatLng(lat, lng).subscribe((currency:any) => {
+      this.currency = currency;
+      this.getPrices(this.currency || 'USD')
+
+      console.log('Currency from latitude,longitude:', currency);
+    });
+
+
+    this.geocodeservice.reverseGeocode(lat, lng).then((data) => {
+      console.log('data del niehboghod')
+      console.log(data);
+    });
   }
 
 
