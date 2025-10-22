@@ -1,0 +1,41 @@
+<div class="relative w-full">
+    <!-- Label (no se quita) -->
+    <label [class.text-error-500]="error()" class="block mb-1 text-sm font-medium text-neutral-600">
+    {{ label() }} {{ required() ? '*' : '' }}
+  </label>
+
+    <!-- Contenedor del select -->
+    <div class="border-2   min-h-[3rem] w-full flex items-center justify-between px-3 rounded-lg" [class]="containerClasses">
+        <input type="text" class="flex-1 text-left  focus:outline-none placeholder:text-grayl-400 text-neutral-700" [placeholder]="placeholder()" [disabled]="disabled()" [value]="selectedOption?.label || searchTerm()" (input)="onSearchChange($event)" (focus)="open.set(true)"
+            (blur)="onBlur()" />
+
+        <!-- Ícono envuelto en div para mantener proporciones -->
+        <div class="flex items-center justify-center w-8">
+            <svg class="w-5 h-5" [ngClass]="{
+          'text-gray-400': !(error() && touched() && !open()),
+          'text-error-400': error() && touched() && !open()
+        }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+        </div>
+    </div>
+
+    <!-- Dropdown -->
+    @if (open()) {
+    <div [class]="dropdownClasses" style="background-color: #ffffff" [ngClass]="{
+      '': dropdownDirection() === 'down',
+      'mb-2 bottom-full': dropdownDirection() === 'up'
+    }">
+        @for (opt of filteredOptions; track opt.value) {
+        <div (mousedown)="$event.preventDefault()" (click)="select(opt)" class="flex items-center gap-3 py-2 cursor-pointer transition hover:bg-primary-50 pl-4 mx-2 rounded-md">
+            <span class="flex-1 text-left text-neutral-600 text-lg font-medium hover:text-primary-700" [ngClass]="{ 'font-bold': value() === opt.value }">
+        {{ opt.label }}
+      </span> @if (value() === opt.value) {
+            <svg class="w-6 h-6 text-neutral-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+      </svg> }
+        </div>
+        }
+    </div>
+    }
+</div>

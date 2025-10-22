@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MapComponent } from "../../../shared/components/map/map.component";
 import { PhoneInputComponent } from "../../../shared/phone-input/phone-input.component";
@@ -9,20 +9,52 @@ import { ApiService } from '../../../shared/services/api.service';
 import { TextEditorComponent } from "../../../shared/components/text-editor/text-editor.component";
 import {  ImageCropperComponent, ImageTransform } from 'ngx-image-cropper';
 import { GeocodeService } from '../../../shared/services/geocode.service';
+import { SessionRecorderComponent } from "../../../shared/components/session-recorder/session-recorder.component";
+import { SelectComponent  } from "../../../shared/components/select-autocomplete/select-autocomplete.component";
+import { catBreedsOptions, dogBreedsOptions } from '../../../constants';
+
+
+// import { initNps } from 'chikavi-tracking';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastComponent } from "../../../shared/components/toast/toast.component";
+
 
 @Component({
   selector: 'app-create',
   standalone: true,
   imports: [CommonModule,
-    ReactiveFormsModule, MapComponent, PaymentComponent, PhoneInputComponent, HttpClientModule,
-    ImageCropperComponent],
-  providers:[ApiService,GeocodeService],
+    ReactiveFormsModule, MapComponent, PaymentComponent, CommonModule, PhoneInputComponent, HttpClientModule,
+    ImageCropperComponent, SessionRecorderComponent, SelectComponent, ToastComponent],
+  providers:[ApiService,GeocodeService,],
   templateUrl: './create.component.html',
   styleUrl: './create.component.scss'
 })
-export class CreateComponent {
+export class CreateComponent   implements OnInit{
+    @ViewChild('toast') toast!: ToastComponent;
   @ViewChild('paymentComponent') paymentComponent!: PaymentComponent;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
+  }
+
+    private nps: any;
+
+    //  initNps() {
+    //   this.nps = new initNps({
+    //     projectId: 'demo-123',
+    //     endpoint: 'https://trackit-suite-back.onrender.com/nps',
+    //     position: 'bottom-center',
+    //     autoShow: false,
+    //     delay: 1000
+    //   });
+    // }
+
+    abrirNps() {
+      this.nps.open();
+    }
+
+loading = false;
   reportForm: FormGroup;
   step = 1;
   today = '';
@@ -44,20 +76,24 @@ export class CreateComponent {
   scale = 1;
 
 
-  triggerPayment() {
-    if (this.paymentComponent) {
-      this.paymentComponent.pay();
-    }
-  }
+  readonly numberSelected = signal<any>(null);
+
+  dogBreeds = dogBreedsOptions;
+  catBreeds = catBreedsOptions;
+
+
 
    imageChangedEvent: any = '';
 
 
- imageCropped(event: any) {
-  this.photoPreview = event.objectUrl; // preview directo en <img>
+croppedBlob: Blob | null = null;
+
+imageCropped(event: any) {
+  this.photoPreview = event.objectUrl;
+  this.croppedBlob = event.blob; // guardamos el recorte
 
   const control = this.reportForm.get('step2.photo');
-  control?.setValue(event.blob); // o guardas el blob en el form
+  control?.setValue(event.blob);
   control?.markAsTouched();
   control?.updateValueAndValidity();
 }
@@ -127,29 +163,39 @@ export class CreateComponent {
 }
 
 
-  uploadPhoto() {
-    if (!this.photoFile) return;
+uploadPhoto() {
+  if (!this.croppedBlob) return; // <--- usamos el recorte, no el archivo original
 
-    const formData = new FormData();
-    formData.append('file', this.photoFile);
+  const formData = new FormData();
+  formData.append('file', this.croppedBlob, 'cropped.png'); // nombre opcional
 
-    this.apiService.post<{message?: string, url?: string, error?: string}>('marketing/upload', formData)
-      .subscribe({
-        next: res => {
-          console.log("res",res)
-          if (res.error) {
-            alert('Imagen no válida: ' + res.error);
-          } else {
-            alert('Imagen subida correctamente!');
-            console.log('URL:', res.url);
-          }
-        },
-        error: err => {
-          console.error(err);
-          alert('Error subiendo la imagen');
+  this.apiService
+    .post<{ message?: string; url?: string; error?: string }>(
+      'reports/upload-image',
+      formData
+    )
+    .subscribe({
+      next: (res) => {
+        console.log('res', res);
+        if (!res.error) {
+          this.reportForm.get('step2.photo')?.setValue(res.url);
+          console.log('URL subida:', res.url);
         }
-      });
-  }
+      },
+      error: (err) => {
+        console.error('Error', err);
+      }
+    });
+}
+
+
+imageLoaded = false;
+
+onImageLoad() {
+  this.imageLoaded = true;
+}
+
+
 
 ngOnInit() {
   const now = new Date();
@@ -157,6 +203,9 @@ ngOnInit() {
   const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Mes de 2 dígitos
   const day = now.getDate().toString().padStart(2, '0'); // Día de 2 dígitos
   this.today = `${year}-${month}-${day}`;
+
+  // this.initNps();
+  this.generateFakeNumbers();
 }
 
  activeTab: 'facebook' | 'instagram' = 'facebook';
@@ -180,14 +229,75 @@ onLocationSelected(coords: [number, number]) {
     });
   }
 
+ getImageUrlPreview(options?: {
+  format?: string;
+  withQr?: boolean;
+}): string {
+  const step1 = this.reportForm.value.step1 || {};
+  const step2 = this.reportForm.value.step2 || {};
+  const step3 = this.reportForm.value.step3 || {};
+  const step4 = this.reportForm.value.step4 || {};
 
-  constructor(private fb: FormBuilder) {
+  const params = new URLSearchParams();
+
+
+
+  // Campos del formulario
+  if (step1.petName) params.set('name', step1.petName);
+  if (step1.specie) params.set('species', step1.specie);
+  if (step1.breed) params.set('breed', step1.breed);
+  if (step1.color) params.set('color', step1.color);
+
+  if (step3.reward) params.set('reward', step3.reward);
+  if (step3.address) params.set('lastSeen', step3.address);
+  if (this.primaryLineDirection) params.set('primaryLineDirection', this.primaryLineDirection);
+  if (this.secondaryLineDirection) params.set('secondaryLineDirection', this.secondaryLineDirection);
+  if (step3.description) params.set('description', step3.description);
+  if (step3.disappearanceDate) params.set('date', step3.disappearanceDate);
+
+  if (step4.phone) params.set('cellphone', step4.phone);
+
+  // Imagen obligatoria
+    if (step2.photo) {
+      params.set('imageUrl', `http://localhost:3000${step2.photo}`);
+    } else {
+      params.set('imageUrl', '');
+    }
+
+  // Parámetros dinámicos
+  params.set('format', options?.format || 'preview-pdf');
+  if (options?.withQr !== undefined) params.set('withQr', options.withQr ? 'true' : 'false');
+
+  return `http://localhost:3000/reports/generate-flyer?${params.toString()}`;
+}
+
+formattedDisappearanceDate = '';
+
+formatDateInput() {
+  const control = this.reportForm.get('step3.disappearanceDate');
+  const value = control?.value;
+  if (!value) return;
+
+  const date = new Date(value);
+  if (!isNaN(date.getTime())) {
+     this.formattedDisappearanceDate = date.toLocaleDateString('es-MX', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+
+  }
+}
+
+
+
+  constructor(private fb: FormBuilder ) {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
     const day = String(today.getDate()).padStart(2, '0');
 
-    const formattedToday = `${year}-${month}-${day}`;
 
     this.reportForm = this.fb.group({
       step1: this.fb.group({
@@ -202,10 +312,11 @@ onLocationSelected(coords: [number, number]) {
       }),
       step3: this.fb.group({
         lastLocation: ['', Validators.required],
-        disappearanceDate: [formattedToday, Validators.required],
+        disappearanceDate: [, Validators.required],
         latitude: [],
         longitude: [],
-        description: ['']
+        description: [''],
+        reward: [0],
       }),
       step4: this.fb.group({
         ownerName: ['', Validators.required],
@@ -213,78 +324,160 @@ onLocationSelected(coords: [number, number]) {
         email: ['', [Validators.required, Validators.email]],
         notifications: [true]
       }),
-      step5: this.fb.group({
+      step6: this.fb.group({
         plan: ['']
       })
     });
 
   }
 
-  // ✅ Validar y avanzar al siguiente paso
-  nextStep() {
-    const stepGroup = this.getCurrentStepGroup();
-    console.log(this.step);
 
-    const latitude = this.reportForm.get('step3.latitude')?.value;
-    const longitude = this.reportForm.get('step3.longitude')?.value;
+nextStep() {
+  const stepGroup = this.getCurrentStepGroup();
 
-    if(this.step === 2){
-
-    }
-
-    if(this.step === 3){
-      this.getCurrency(latitude,longitude);
-     }
-
-    if ( this.step === 5 || stepGroup.valid) {
-      this.step++;
-    } else {
-      stepGroup.markAllAsTouched();
-    }
-  }
-
-  // ✅ Retroceder
-  prevStep() {
-    if (this.step > 1) this.step--;
-  }
-
-  // ✅ Obtener el form group del paso actual
-  private getCurrentStepGroup(): FormGroup {
-    return this.reportForm.get(`step${this.step}`) as FormGroup;
-  }
-
-  // ✅ Enviar reporte
-  createReport() {
-  if (this.reportForm.invalid) {
-    this.reportForm.markAllAsTouched();
+  // 🚫 Si el grupo del paso actual no es válido, marcarlo y detener
+  if (stepGroup && stepGroup.invalid) {
+    stepGroup.markAllAsTouched();
     return;
   }
 
-  this.triggerPayment();
+  const latitude = this.reportForm.get('step3.latitude')?.value;
+  const longitude = this.reportForm.get('step3.longitude')?.value;
 
-  const payload = {
-    ...this.reportForm.value.step1,
-    ...this.reportForm.value.step2,
-    ...this.reportForm.value.step3,
-    ...this.reportForm.value.step4,
-    ...this.reportForm.value.step5,
-    fbAdId: '123456789',
-    plan: this.plan,
-    paymentId: 'pay_987654321'
-  };
+  console.log('Paso actual:', this.step);
+  console.log('Plan:', this.plan);
 
-  console.log('📤 Payload final:', payload);
+  switch (this.step) {
+    case 2:
+      this.uploadPhoto();
+      break;
 
-  this.apiService.post('reports', payload).subscribe({
-    next: (res) => {
-      this.step = 7;
-    },
-    error: (err) => console.error('❌ Error creating report:', err)
-  });
+    case 3:
+      this.getCurrency(latitude, longitude);
+      this.formatDateInput()
+      break;
+
+    case 4:
+      this.generateCaption()
+      break;
+
+    case 6:
+      // Si el plan es gratuito, crear reporte directamente
+      if (this.plan === 'free') {
+        this.createReport();
+        return;
+      }
+      break;
+  }
+
+  // ✅ Avanzar al siguiente paso
+  this.step++;
 }
 
-selectPlan(plan:any){
+
+
+   prevStep() {
+    if (this.step > 1) this.step--;
+  }
+
+   private getCurrentStepGroup(): FormGroup {
+    return this.reportForm.get(`step${this.step}`) as FormGroup;
+  }
+
+
+
+  async triggerPayment(): Promise<string | null> {
+    if (this.paymentComponent) {
+      return await this.paymentComponent.pay();
+    }
+    return null;
+  }
+caption = '';
+htmlCaption = ''
+ generateCaption() {
+  const lines: string[] = [
+    `🚨 ¡SE BUSCA a ${this.reportForm.value.step1.petName}! 🚨 🐾`,
+    `${this.reportForm.value.step1.breed} ${this.reportForm.value.step1.color}`,
+    `📅 Desapareció el: ${this.formattedDisappearanceDate}`,
+    `📍 Zona: ${this.primaryLineDirection}, ${this.secondaryLineDirection}`,
+    this.reportForm.value.step3.description ? `💔 ${this.reportForm.value.step3.description}` : '',
+    this.reportForm.value.step3.reward > 0 ? `🎁 Se ofrece recompensa: ${this.reportForm.value.step3.reward}` : '',
+    ` `,
+    ` `,
+    `📞 Si has visto a ${this.reportForm.value.step1.petName} o tienes información, contacta a ${this.reportForm.value.step4.ownerName} al`,
+    `📱 Tel: ${this.reportForm.value.step4.phone}`,
+    ``,
+    `🙏 ¡Ayúdanos a traer a ${this.reportForm.value.step1.petName} de vuelta a casa!`,
+    `🐾 #MascotaPerdida #SeBusca #${this.reportForm.value.step1.petName} #AyúdanosABuscarlo`
+  ];
+
+  // Une todo con \n y elimina líneas vacías al inicio/final
+  this.caption = lines.filter(line => line.trim() !== '').join('\n');
+  this.htmlCaption = this.caption.replace(/\n/g, '<br>');
+}
+
+
+ async createReport() {
+  if (this.loading) return;
+  this.loading = true;
+
+  try {
+    let paymentId: string | null = null;
+
+    // 1️⃣ Si el plan no es free, hacemos el pago
+    if (this.plan !== 'free' && this.paymentComponent) {
+      paymentId = await this.paymentComponent.pay();
+      if (!paymentId) {
+        console.warn('⚠️ Pago fallido o cancelado, no se creará el reporte.');
+        return;
+      }
+    }
+
+
+
+    // 2️⃣ Construir payload del reporte
+    const payload = {
+      ...this.reportForm.value.step1,
+      ...this.reportForm.value.step2,
+      ...this.reportForm.value.step3,
+      ...this.reportForm.value.step4,
+      ...this.reportForm.value.step7,
+      fbAdId: '123456789',
+      plan: this.plan,
+      paymentId,
+      caption: this.caption,
+      url_post_flyer: this.getImageUrlPreview({ format: 'facebook-post', withQr: false }),
+      url_story_flyer: this.getImageUrlPreview({ format: 'instagram-story', withQr: false })
+    };
+
+    console.log('payload', payload);
+
+
+    // 3️⃣ Enviar al backend (endpoint unificado)
+    const res = await this.apiService.post('reports/create-with-payment', payload).toPromise();
+    console.log('📤 Reporte creado:', res);
+
+    // 4️⃣ Avanzar paso o mostrar mensaje
+    this.step = 8;
+
+    this.abrirNps();
+
+
+  } catch (err: any) {
+    console.error('❌ Error creando reporte:', err);
+    alert(err?.error?.message || 'Error creando el reporte');
+  } finally {
+    this.loading = false;
+  }
+}
+
+
+
+    priceSelected = '';
+
+selectPlan(plan:any,price:any){
   this.plan = plan;
+  this.priceSelected = price;
   if(plan !== 'free'){
     this.priceId  =  this.prices.plans[plan].id;
     console.log('priceID: ',this.priceId)
@@ -310,6 +503,9 @@ selectPlan(plan:any){
     ];
   }
 
+  primaryLineDirection:any = '';
+  secondaryLineDirection:any = '';
+
   getCurrency(lat: number, lng: number) {
 
     this.apiService.getCurrencyFromLatLng(lat, lng).subscribe((currency:any) => {
@@ -323,35 +519,79 @@ selectPlan(plan:any){
     this.geocodeservice.reverseGeocode(lat, lng).then((data) => {
       console.log('data del niehboghod')
       console.log(data);
+      const value = this.reportForm.get('step3')?.get('lastLocation')?.value || '';
+      this.primaryLineDirection = value.charAt(0).toUpperCase() + value.slice(1);
+
+      this.secondaryLineDirection =   data.ubicacionGeneral;
+      console.log('primary',  this.primaryLineDirection);
+      console.log('seconday', this.secondaryLineDirection);
+
     });
   }
 
+  fakeLikes = 0;
+  fakecomments = 0;
+  fakeshare = 0;
+  fakeLikesIG = 0;
 
-  downloadFlyer(format: string) {
-  // Construir la URL de tu endpoint con query params
-  const params = new URLSearchParams({
-    format,
-    name: 'Radi',
-    species: 'dog',
-    color: 'gris',
-    lastSeen: '11/02/2025',
-    description: 'ayudame',
-    imageUrl: "https://cdn0.expertoanimal.com/es/razas/9/7/5/dogo-argentino_579_0_orig.jpg"
-  });
+  generateFakeNumbers(){
+    this.fakeLikes = this.randomNumber(150, 200)
+    this.fakecomments = this.randomNumber(20, 50)
+    this.fakeshare = this.randomNumber(30, 80)
+    this.fakeLikesIG = this.randomNumber(30, 80)
 
-  const url = `http://localhost:3000/api/v1/marketing/generate-flyer?${params.toString()}`;
 
-  // Descargar como blob
-  fetch(url)
-    .then(res => res.blob())
-    .then(blob => {
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = `${format}.png`;
-      link.click();
-      window.URL.revokeObjectURL(link.href); // liberar memoria
-    })
-    .catch(err => console.error("Error descargando el flyer:", err));
+  }
+
+  randomNumber(min: number, max: number): number {
+    if (min > max) [min, max] = [max, min];
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+async downloadFlyer(format: string, withQr = false) {
+  try {
+     const url = this.getImageUrlPreview({ format, withQr });
+
+
+      this.toast.show('Generando tu flyer...', 'info', 5000);
+
+     console.log('url',  url)
+
+     const response = await fetch(url);
+    if (!response.ok) throw new Error('Error al generar el flyer');
+
+    // Detectar el tipo de archivo devuelto
+    const contentType = response.headers.get('Content-Type') || '';
+    const blob = await response.blob();
+
+    // Determinar la extensión automáticamente
+    let extension = 'bin';
+    if (contentType.includes('pdf')) extension = 'pdf';
+    else if (contentType.includes('png')) extension = 'png';
+    else if (contentType.includes('jpeg') || contentType.includes('jpg')) extension = 'jpg';
+    else if (contentType.includes('webp')) extension = 'webp';
+
+    // Crear URL temporal y disparar descarga
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `flyer-${format}.${extension}`;
+    link.click();
+
+    // Liberar memoria
+    URL.revokeObjectURL(blobUrl);
+
+    console.log(`✅ Descarga completada: flyer-${format}.${extension}`);
+  } catch (err) {
+    console.error('❌ Error descargando el flyer:', err);
+  }
+}
+
+
+
+allowOnlyNumbers(event: any) {
+  event.target.value = event.target.value.replace(/[^0-9]/g, '');
+  this.reportForm.get('reward')?.setValue(event.target.value, { emitEvent: false });
 }
 
 }

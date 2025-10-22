@@ -5,8 +5,8 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class StripeService {
-  private stripePromise = loadStripe('pk_test_51QUyNoDU5nT1bn5nKumCvFFE1JfrFdUY8ZJtItM1EM4fJ51OLKDAj7M7rGFEmRr92eJHhS5QCgVhb52zy4vlJd0q00zrpkChdf'); // coloca tu public key de prueba
-   private baseUrl = 'http://localhost:3000';
+  private stripePromise = loadStripe('pk_test_51QUyNoDU5nT1bn5nKumCvFFE1JfrFdUY8ZJtItM1EM4fJ51OLKDAj7M7rGFEmRr92eJHhS5QCgVhb52zy4vlJd0q00zrpkChdf');
+  private baseUrl = 'http://localhost:3000'; // tu backend
 
   constructor(private http: HttpClient) {}
 
@@ -14,10 +14,9 @@ export class StripeService {
     return this.stripePromise;
   }
 
-  // Llama al backend para crear el PaymentIntent
   createPaymentIntent(priceId: string) {
     return firstValueFrom(
-      this.http.post<{ clientSecret: string }>(`${this.baseUrl}/reports/test`, { priceId })
+      this.http.post<{ clientSecret: string }>(`${this.baseUrl}/reports/payment`, { priceId })
     );
   }
 }

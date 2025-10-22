@@ -1,94 +1,106 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, Input, SimpleChanges } from '@angular/core';
-import { Stripe, StripeElements } from '@stripe/stripe-js';
+import { Component, ElementRef, ViewChild, AfterViewInit, Input, EventEmitter, Output } from '@angular/core';
+import { Stripe, StripeElements, StripeCardElement } from '@stripe/stripe-js';
 import { StripeService } from '../../services/stripe.service';
 import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [HttpClientModule],
+  imports: [HttpClientModule,CommonModule],
   providers: [StripeService],
   templateUrl: './payment.component.html',
-  styleUrl: './payment.component.scss'
+  styleUrls: ['./payment.component.scss']
 })
 export class PaymentComponent implements AfterViewInit {
   @ViewChild('cardElement') cardElement!: ElementRef;
 
   @Input() priceId: string = '';
+  @Input() userName: string = '';
+  @Input() email: string = '';
+
+  @Output() paymentSuccess = new EventEmitter<string>();
+
   stripe!: Stripe | null;
   elements?: StripeElements | null;
-  card?: any;
+  card?: StripeCardElement;
   clientSecret?: string;
   loading = false;
-  amount = 4900;
+  errorMessage: string | undefined = '';
 
   constructor(private stripeService: StripeService) {}
 
   async ngAfterViewInit() {
-    // 1️⃣ Inicializar Stripe
     this.stripe = await this.stripeService.getStripe();
     if (!this.stripe) return;
 
-    // 2️⃣ Crear Elements
     this.elements = this.stripe.elements();
-
-    this.card = this.elements!.create('card', {
+    this.card = this.elements.create('card', {
       style: {
         base: {
           color: '#1a202c',
           fontFamily: '"Inter", sans-serif',
           fontSize: '16px',
           '::placeholder': { color: '#a0aec0' },
-          padding: '0',
         },
-        invalid: {
-          color: '#e53e3e',
-          iconColor: '#e53e3e'
-        }
+        invalid: { color: '#e53e3e', iconColor: '#e53e3e' }
       },
       hidePostalCode: true
     });
 
-    this.card.mount(this.cardElement!.nativeElement);
+    this.card.mount(this.cardElement.nativeElement);
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['priceId']) {
-      console.log('🔄 priceId recibido en PaymentComponent:', this.priceId);
-    }
-  }
+  async pay(): Promise<string | null> {
+    if (!this.stripe || !this.card) return null;
+    if (this.loading) return null; // Evita doble clic
 
-
-
-  async pay( ) {
-    if (!this.stripe || !this.card) return;
+    this.loading = true;
+    this.errorMessage = '';
 
     try {
-      this.loading = true;
+      // 1️⃣ Crear PaymentIntent si no existe
+      if (!this.clientSecret) {
+        const resp = await this.stripeService.createPaymentIntent(this.priceId);
+        this.clientSecret = resp.clientSecret;
+      }
 
-      // 1) Pedir clientSecret al backend usando priceId
-      const resp = await this.stripeService.createPaymentIntent(this.priceId);
-      this.clientSecret = resp.clientSecret;
-
-      // 2) Confirmar pago
-      const result = await this.stripe.confirmCardPayment(this.clientSecret!, {
-        payment_method: { card: this.card }
+      // 2️⃣ Confirmar pago
+      const result = await this.stripe.confirmCardPayment(this.clientSecret, {
+        payment_method: {
+          card: this.card,
+          billing_details: {
+            name: this.userName || 'Usuario ejemplo',
+            email: this.email || 'usuario@ejemplo.com'
+          }
+        }
       });
 
-      console.log('result', result);
-
       if (result.error) {
-        alert(result.error.message);
-      } else if (result.paymentIntent?.status === 'succeeded') {
-        alert('Pago realizado con éxito');
+        console.error('❌ Error en el pago:', result.error.message);
+        this.errorMessage = result.error.message;
+        return null;
       }
+
+      if (result.paymentIntent?.status === 'succeeded') {
+        console.log('✅ Pago exitoso:', result.paymentIntent.id);
+        this.paymentSuccess.emit(result.paymentIntent.id);
+        return result.paymentIntent.id;
+      }
+
+      if (result.paymentIntent?.status === 'requires_action') {
+        this.errorMessage = '⚠️ El pago requiere autenticación adicional';
+        return null;
+      }
+
+      return null;
+
     } catch (err) {
-      console.error(err);
-      alert('Error en el pago');
+      console.error('🚨 Error general en pay():', err);
+      this.errorMessage = 'Error procesando el pago';
+      return null;
     } finally {
       this.loading = false;
     }
   }
-
-
 }
